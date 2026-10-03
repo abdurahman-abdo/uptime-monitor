@@ -1,0 +1,21 @@
+# Python execution cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Python Virtual Environment
+uptime-monitor/
+Include/
+Lib/
+Scripts/
+share/
+pyvenv.cfg
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# IDE & Editor files
+.vscode/
+
+# Debugging files
+debug.ipynb
