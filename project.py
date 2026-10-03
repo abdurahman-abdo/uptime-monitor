@@ -1,7 +1,17 @@
 import requests
-import time
 
 def check_url(url: str, timeout: float = 5.0, redirects: bool = True) -> dict:
+    """This function takes a url, [timeout and redirects, optional], checks whether the url responds as intended, and returns a dictionary containing the status info.
+
+    Args:
+        url (str): the url you want to check
+        timeout (float, optional): sets a maximum wait time (in seconds) for the server to send any data back. Defaults to 5.0.
+        redirects (bool, optional): sets whether the request should follow redirects or just stop when it faces one. Defaults to True.
+
+    Returns:
+        dict: with a constant keys of url, the final url, status_code, response_time in microseconds, whether successful or not, amount of redirects, and any errors.
+    """
+    
     report = {
         "url": url,
         "final_url": url,
@@ -13,7 +23,7 @@ def check_url(url: str, timeout: float = 5.0, redirects: bool = True) -> dict:
     }
     
     try:
-        response = requests.get(url, timeout=timeout, allow_redirects=redirects)
+        response = requests.get(url=url, timeout=timeout, allow_redirects=redirects)
         
         report["status_code"] = response.status_code
         report["response_time_ms"] = round(response.elapsed.total_seconds() * 1000, 2)
