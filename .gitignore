@@ -18,4 +18,4 @@ pyvenv.cfg
 .vscode/
 
 # Debugging files
-debug.ipynb
+*debug*
