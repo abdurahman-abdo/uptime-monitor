@@ -39,10 +39,11 @@ class RequestsMock:
     "file:///etc/passwd",
     "example.com",
     "htp://example.com",
-    "mailto:user@domain.com"
+    "mailto:user@domain.com",
+    "http://",
 ])
 
-def test_check_url_invalid_schema(url):
+def test_check_malformed_url(url):
     response = project.check_url(url)
 
     assert response["final_url"] == url
@@ -50,7 +51,7 @@ def test_check_url_invalid_schema(url):
     assert response["response_time_ms"] is None
     assert response["is_ok"] is False
     assert response["redirects"] is None
-    assert response["error"]
+    assert response["error"] is not None
 
 def run_and_assert_url(monkeypatch, url, status_code, expected_status, expected_is_ok, expected_error=True, timeout=0.5):
     def get(url, timeout, allow_redirects=True):
