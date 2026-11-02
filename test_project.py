@@ -11,6 +11,7 @@ import project
     "mailto:user@domain.com",
     "http://",
 ])
+
 def test_check_malformed_url(url):
     response = project.check_url(url)
 
@@ -108,3 +109,33 @@ def test_check_url(monkeypatch):
                         expected_status=200, 
                         expected_is_ok=False,
                         timeout=0.5)
+    
+sample_successful_response_dict = [
+    {
+        "url": "",
+        "status_code": "",
+        "response_time_ms": "",
+        "is_ok": True,
+        "error": ""
+    }
+]
+
+sample_successful_response_dict = [
+    {
+        "url": "",
+        "status_code": "",
+        "response_time_ms": "",
+        "is_ok": True,
+        "error": ""
+    }
+]
+
+sample_successful_response_dict = [
+    {
+        "url": "",
+        "status_code": "",
+        "response_time_ms": "",
+        "is_ok": True,
+        "error": ""
+    }
+]
