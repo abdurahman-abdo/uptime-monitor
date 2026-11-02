@@ -67,11 +67,73 @@ def days_until_cert_expiry(hostname: str, port: int = 443) -> int | None:
     """Return days until the TLS cert expires (None for non-HTTPS or failure)."""
 
 def summarize_results(results: list[dict]) -> dict:
-    """Return uptime %, average response time, and the list of failing URLs."""
+    """Summarize URL checks into their counts, uptime, and failures.
 
+    Args:
+        results (list[dict]): Report dictionaries returned by check_url. The keys
+            used are "is_ok", "response_time_ms" (milliseconds), "url",
+            "status_code", and "error" (error message).
+
+    Returns:
+        A dictionary that always has the same keys:
+            total_checks (int): number of reports received.
+            number_up (int): reports where "is_ok" is true.
+            number_down (int): total_checks minus number_up.
+            uptime (float | int | None): percentage of checks that were
+                up, rounded to 2 decimals. None if there are no checks.
+            average_response_time (float | None): mean response time in
+                milliseconds across successful checks only, rounded to
+                2 decimals. None if there are no successful checks.
+            failures (list[dict]): one entry per failed check, each with
+                "url", "status_code", and "error_message". Empty if
+                every check succeeded.
+
+    Notes:
+        Any check where "is_ok" is false counts as down, including a
+        404 or 500, even though the server responded. Down checks are
+        excluded from the average response time, and a check that never
+        got a response has no time to include anyway.
+
+        Empty list: uptime and average_response_time are both None.
+        All checks failed: uptime is 0 and average_response_time is None.
+    """
+    
+    total_checks = len(results)
+    number_up = 0
+    response_time = 0
+    failed_urls_info = []
+    
+    for site in results:
+        if site.get("is_ok"):
+            number_up += 1
+            response_time += site.get("response_time_ms")
+        else:
+            failed_urls_info.append({"url": site.get("url"), "status_code": site.get("status_code"), "error_message": site.get("error")})
+
+    if total_checks == 0:
+        uptime_percentage = None
+        average_response_time = None
+    elif number_up == 0:
+        uptime_percentage = 0
+        average_response_time = None
+    else:
+        uptime_percentage = round((number_up/total_checks * 100), 2)
+        average_response_time = round(response_time/number_up, 2)
+        
+    result = {
+        "total_checks": total_checks,
+        "number_up": number_up,
+        "number_down": total_checks - number_up,
+        "uptime": uptime_percentage,
+        "average_response_time": average_response_time,
+        "failures": failed_urls_info
+    }
+    
+    return result
+    
 def main():
     """Load targets, run checks, print/store a summary (CLI entry point)."""
-    print(check_url(url="ftp://example.com", timeout=2))
+    # print(check_url(url="https://example.com", timeout=2))
 
 if __name__ == "__main__":
     main()
