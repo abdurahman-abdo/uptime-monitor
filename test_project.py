@@ -259,6 +259,11 @@ def test_summarize_results_empty():
     assert summary["total_checks"] == 0
     assert summary["number_up"] == 0
     assert summary["number_down"] == 0
-    assert summary["uptime"] == None
-    assert summary["average_response_time"] == None
+    assert summary["uptime"] is None
+    assert summary["average_response_time"] is None
     assert not summary["failures"]
+
+def test_summarize_results_failed():    
+    with pytest.raises(TypeError):
+            project.summarize_results(sample_corrupt_response_dict)
+        
