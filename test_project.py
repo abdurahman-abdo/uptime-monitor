@@ -110,32 +110,75 @@ def test_check_url(monkeypatch):
                         expected_is_ok=False,
                         timeout=0.5)
     
-sample_successful_response_dict = [
+sample_mixed_response_dict = [
     {
-        "url": "",
-        "status_code": "",
-        "response_time_ms": "",
+        "url": "https://www.example.com",
+        "status_code": 200,
+        "response_time_ms": 120,
         "is_ok": True,
-        "error": ""
+        "error": None
+    },
+    {
+        "url": "https://www.github.com",
+        "status_code": 200,
+        "response_time_ms": 340,
+        "is_ok": True,
+        "error": None
+    },
+    {
+        "url": "https://httpbin.org/status/404",
+        "status_code": 404,
+        "response_time_ms": 829.12,
+        "is_ok": False,
+        "error": 'Resource not found (404).'
     }
 ]
 
-sample_successful_response_dict = [
+sample_down_response_dict = [
     {
-        "url": "",
-        "status_code": "",
-        "response_time_ms": "",
-        "is_ok": True,
-        "error": ""
+        "url": "https://test.com",
+        "status_code": None,
+        "response_time_ms": None,
+        "is_ok": False,
+        "error": 'Failed to connect to the server.'
+    },
+    {
+        "url": "ftp://example.com",
+        "status_code": None,
+        "response_time_ms": None,
+        "is_ok": False,
+        "error": "An unexpected requests error occurred: No connection adapters were found for 'ftp://example.com'"
+    },
+    {
+        "url": "https://httpbin.org/status/404",
+        "status_code": 404,
+        "response_time_ms": 829.12,
+        "is_ok": False,
+        "error": 'Resource not found (404).'
     }
 ]
 
-sample_successful_response_dict = [
+sample_up_response_dict = [
     {
-        "url": "",
-        "status_code": "",
-        "response_time_ms": "",
+        "url": "https://www.example.com",
+        "status_code": 200,
+        "response_time_ms": 120,
         "is_ok": True,
-        "error": ""
+        "error": None
+    },
+    {
+        "url": "https://www.github.com",
+        "status_code": 200,
+        "response_time_ms": 340,
+        "is_ok": True,
+        "error": None
+    },
+    {
+        "url": "https://www.google.com",
+        "status_code": 200,
+        "response_time_ms": 1031.3,
+        "is_ok": True,
+        "error": None
     }
 ]
+
