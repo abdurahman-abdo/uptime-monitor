@@ -182,3 +182,83 @@ sample_up_response_dict = [
     }
 ]
 
+sample_corrupt_response_dict = [
+    {
+        "url": "https://www.example.com",
+        "status_code": 200,
+        "response_time_ms": None,
+        "is_ok": True,
+        "error": None
+    },
+    {
+        "url": "https://www.github.com",
+        "status_code": 200,
+        "response_time_ms": 340,
+        "is_ok": True,
+        "error": None
+    },
+]
+
+sample_empty_response = []
+
+def test_summarize_results_mixed():
+    summary = project.summarize_results(sample_mixed_response_dict)
+    
+    assert summary["total_checks"] == 3
+    assert summary["number_up"] == 2
+    assert summary["number_down"] == 1
+    assert summary["uptime"] == 66.67
+    assert summary["average_response_time"] == 230
+    assert summary["failures"] == [
+        {
+            "url": 'https://httpbin.org/status/404',
+            "status_code": 404,
+            "error_message": 'Resource not found (404).'
+        }
+    ]
+
+def test_summarize_results_up():
+    summary = project.summarize_results(sample_up_response_dict)
+    
+    assert summary["total_checks"] == 3
+    assert summary["number_up"] == 3
+    assert summary["number_down"] == 0
+    assert summary["uptime"] == 100
+    assert summary["average_response_time"] == 497.1
+    assert not summary["failures"]
+
+def test_summarize_results_down():
+    summary = project.summarize_results(sample_down_response_dict)
+    
+    assert summary["total_checks"] == 3
+    assert summary["number_up"] == 0
+    assert summary["number_down"] == 3
+    assert summary["uptime"] == 0
+    assert summary["average_response_time"] is None
+    assert summary["failures"] == [
+        {
+            "url": 'https://test.com',
+            "status_code": None,
+            "error_message": 'Failed to connect to the server.'
+        },
+                {
+            "url": 'ftp://example.com',
+            "status_code": None,
+            "error_message": "An unexpected requests error occurred: No connection adapters were found for 'ftp://example.com'"
+        },
+        {
+            "url": 'https://httpbin.org/status/404',
+            "status_code": 404,
+            "error_message": 'Resource not found (404).'
+        }
+    ]
+
+def test_summarize_results_empty():
+    summary = project.summarize_results(sample_empty_response)
+    
+    assert summary["total_checks"] == 0
+    assert summary["number_up"] == 0
+    assert summary["number_down"] == 0
+    assert summary["uptime"] == None
+    assert summary["average_response_time"] == None
+    assert not summary["failures"]
