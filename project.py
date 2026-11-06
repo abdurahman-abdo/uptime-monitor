@@ -136,7 +136,7 @@ def json_loader(file_name):
         with open(file_name, "r", encoding="utf-8") as file:
             urls = json.load(file)
     except FileNotFoundError:
-        raise ValueError("File was not found!")
+        raise ValueError(f"The file {file_name} was not found!")
     except json.JSONDecodeError:
         raise ValueError("The JSON file is corrupted or empty!")
     
