@@ -146,7 +146,22 @@ def json_loader(file_name):
     return urls
 def main():
     """Load targets, run checks, print/store a summary (CLI entry point)."""
+    try:
+        urls = json_loader("sample.json")
+    except ValueError as e:
+        sys.exit(e)
     
+    responses = []
+    
+    cleaned_urls = []
+    for idx, url in enumerate(urls):
+        if url.get("url", None) is None:
+            print("There was no url key detected, thus dropped!")
+            continue
+        cleaned_urls.append(urls[idx])
+
+    for url in cleaned_urls:
+        responses.append(check_url(url=url["url"], timeout=url.get("timeout", 5.0,), redirects=url.get("redirects", True)))
 
 if __name__ == "__main__":
     main()
