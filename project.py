@@ -146,8 +146,11 @@ def json_loader(file_name):
     return urls
 def main():
     """Load targets, run checks, print/store a summary (CLI entry point)."""
+    if len(sys.argv) !=2:
+        sys.exit("This program requires an argument, i.e, <python_filename> <json_filename>")
+    
     try:
-        urls = json_loader("sample.json")
+        urls = json_loader(sys.argv[1])
     except ValueError as e:
         sys.exit(e)
     
@@ -162,6 +165,9 @@ def main():
 
     for url in cleaned_urls:
         responses.append(check_url(url=url["url"], timeout=url.get("timeout", 5.0,), redirects=url.get("redirects", True)))
+
+    results = summarize_results(responses)
+    print(json.dumps(results, indent=4))
 
 if __name__ == "__main__":
     main()
