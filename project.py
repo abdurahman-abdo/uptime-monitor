@@ -160,14 +160,39 @@ def main():
     for idx, url in enumerate(urls):
         if url.get("url", None) is None:
             print("There was no url key detected, thus dropped!")
+            print("...")
             continue
         cleaned_urls.append(urls[idx])
+    
+    if not cleaned_urls:
+        sys.exit("A total of 0 websites checked due to empty or invalid input!!! Exiting...")
 
+    
     for url in cleaned_urls:
         responses.append(check_url(url=url["url"], timeout=url.get("timeout", 5.0,), redirects=url.get("redirects", True)))
 
     results = summarize_results(responses)
-    print(json.dumps(results, indent=4))
+    total_checks = results["total_checks"]
+    percentage = results["uptime"]
+    up_no = results["number_up"]
+    down_no = results["number_down"]
+    response_av = results["average_response_time"]
+    failures = results["failures"]
+    failure_urls = [failure["url"] for failure in failures]
+    
+    print("================================================")
+    print("WEBSITE UPTIME MONITOR")
+    print("================================================")
+    print(f"\n{total_checks} websites checked with {percentage:.2f}% success rate!")
+    print("------------------------------------------------")
+    print(f"Total sites that were up:   {up_no}")
+    print(f"Total sites that were down: {down_no}")
+    print(f"Average response time:      {response_av} milliseconds" if response_av is not None else "Average response time:      N/A")
+    # print(f"Failures: {json.dumps(failures, indent=4)}")
+    print(f"Failures: {json.dumps(failure_urls, indent=4)}" if failures else "No failures found.")
+    print()
+    
+    # print(json.dumps(results, indent=4))
 
 if __name__ == "__main__":
     main()
