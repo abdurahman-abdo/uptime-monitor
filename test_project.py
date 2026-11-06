@@ -102,7 +102,7 @@ def test_check_url(monkeypatch):
                     expected_error=None,
                     timeout=2)
 
-    # test working url when timout is exceeded
+    # test working url when timeout is exceeded
     run_and_assert_url(monkeypatch, 
                         url="https://example.com/", 
                         status_code=200, 
