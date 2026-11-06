@@ -1,4 +1,4 @@
-import requests
+import requests, json
 
 def check_url(url: str, timeout: float = 5.0, redirects: bool = True) -> dict:
     """This function takes a url, [timeout and redirects, optional], checks whether the url responds as intended, and returns a dictionary containing the status info.
@@ -133,7 +133,7 @@ def summarize_results(results: list[dict]) -> dict:
     
 def main():
     """Load targets, run checks, print/store a summary (CLI entry point)."""
-    # print(check_url(url="https://example.com", timeout=2))
+    
 
 if __name__ == "__main__":
     main()
