@@ -1,4 +1,4 @@
-import requests, json
+import requests, json, sys
 
 def check_url(url: str, timeout: float = 5.0, redirects: bool = True) -> dict:
     """This function takes a url, [timeout and redirects, optional], checks whether the url responds as intended, and returns a dictionary containing the status info.
@@ -131,6 +131,19 @@ def summarize_results(results: list[dict]) -> dict:
     
     return result
     
+def json_loader(file_name):
+    try:
+        with open(file_name, "r", encoding="utf-8") as file:
+            urls = json.load(file)
+    except FileNotFoundError:
+        raise ValueError("File was not found!")
+    except json.JSONDecodeError:
+        raise ValueError("The JSON file is corrupted or empty!")
+    
+    if not urls or not isinstance(urls, list) or not all(isinstance(url, dict) for url in urls):
+        raise ValueError("The json format was invalid!")
+    
+    return urls
 def main():
     """Load targets, run checks, print/store a summary (CLI entry point)."""
     
