@@ -74,6 +74,28 @@ Provides a list of third-party libraries needed by the project.
 
 
 ## Design decisions
+**No response time for failed checks.** In case of total failure (timeout, unreachable domain, wrong URL), the response time will be `None`, not `0`. Otherwise the average will be distorted by an invented value. `None` explicitly denotes the absence of measurement.
+
+**Successful checks only contribute to average response time.** There is no point to affect the average in case of downtime. The uptime ratio takes into account all checks, which makes it impossible to hide failures. If there were no successful checks, the average is `None`.
+
+**4xx or 5xx response codes are considered downtime.** Server responded, but a user cannot access the page due to an error, therefore it has to be treated as a failure. The statistics list them along with the code. Their response times are not included in average, which is consistent with the above principle.
+
+`check_url` never fails, and always returns the same fields. Each possible error is accounted for as a field in the report, so one bad site doesn't block checking the other sites, and code handling the reports doesn't need to guard against missing fields.
+
+**Each site's redirects are configurable independently.** [Provide your actual defaults and reasoning here. Say whether an off redirect for a server returning 3xx is considered up or not.]
+
+**The calculations are separated from input and output.** `summarize_results` contains just arithmetic on the list, `check_url` communicates with websites only, and `json_loader` reads a file. That makes them independent of each other and testable separately. In the future, a web service can use them independently of command line functionality.
+
+**Loader throws exceptions, while `main()` handles them.** `json_loader` throws a `ValueError` with a proper explanation when the file is missing or incorrect. It never prints or exits, which means it may be used in a web service later on. There, an erroneous configuration file should not terminate the entire server process. Only `main()` prints and exits.
+
+**Dropped entries due to lack of URL raise warning.** One invalid line shouldn't affect the checks for the rest of the sites. However, the drawback is that the site may be dropped because of a trivial reason – a typo, therefore a warning is printed for each skipped entry. On failure of checking of all entries program exits without reporting about zero results.
+
+**Any corrupted data leads to a crash.** In case when a successfully checked website doesn't provide any response time, `summarize_results` crashes and doesn't substitute anything implicitly. The problem here is obviously somewhere up the code and such default behavior would hide the problem behind the legitimate average.
+
+**Rounding happens in the very end.** Only in the end of calculations rounding of percentages and averages to two decimals is made to avoid errors caused by using floating-point number.
+
+**The tests pass without any network connection.** All functions requiring network connection return a predefined value instead so tests can easily be done even offline simulating such situations as 500 status or timeout. Cases of errors before any communication are done by the library itself.  
+
 ## Configuration file format
 ## Installation and usage
 ## Example output
