@@ -202,67 +202,71 @@ sample_corrupt_response_dict = [
 
 sample_empty_response = []
 
-def test_summarize_results_mixed():
-    summary = project.summarize_results(sample_mixed_response_dict)
-    
-    assert summary["total_checks"] == 3
-    assert summary["number_up"] == 2
-    assert summary["number_down"] == 1
-    assert summary["uptime"] == 66.67
-    assert summary["average_response_time"] == 230
-    assert summary["failures"] == [
-        {
-            "url": 'https://httpbin.org/status/404',
-            "status_code": 404,
-            "error_message": 'Resource not found (404).'
-        }
-    ]
-
-def test_summarize_results_up():
-    summary = project.summarize_results(sample_up_response_dict)
-    
-    assert summary["total_checks"] == 3
-    assert summary["number_up"] == 3
-    assert summary["number_down"] == 0
-    assert summary["uptime"] == 100
-    assert summary["average_response_time"] == 497.1
-    assert not summary["failures"]
-
-def test_summarize_results_down():
-    summary = project.summarize_results(sample_down_response_dict)
-    
-    assert summary["total_checks"] == 3
-    assert summary["number_up"] == 0
-    assert summary["number_down"] == 3
-    assert summary["uptime"] == 0
-    assert summary["average_response_time"] is None
-    assert summary["failures"] == [
-        {
-            "url": 'https://test.com',
-            "status_code": None,
-            "error_message": 'Failed to connect to the server.'
-        },
+@pytest.mark.parametrize(
+    "response_data, expected_total, expected_up, expected_down, expected_uptime, expected_avg_time, expected_failures",
+    [
+        (
+            sample_mixed_response_dict,
+            3, 2, 1, 66.67, 230,
+            [
                 {
-            "url": 'ftp://example.com',
-            "status_code": None,
-            "error_message": "An unexpected requests error occurred: No connection adapters were found for 'ftp://example.com'"
-        },
-        {
-            "url": 'https://httpbin.org/status/404',
-            "status_code": 404,
-            "error_message": 'Resource not found (404).'
-        }
+                    "url": "https://httpbin.org/status/404",
+                    "status_code": 404,
+                    "error_message": "Resource not found (404)."
+                }
+            ]
+        ),
+        (
+            sample_up_response_dict,
+            3, 3, 0, 100, 497.1,
+            []
+        ),
+        (
+            sample_down_response_dict,
+            3, 0, 3, 0, None,
+            [
+                {
+                    "url": "https://test.com",
+                    "status_code": None,
+                    "error_message": "Failed to connect to the server."
+                },
+                {
+                    "url": "ftp://example.com",
+                    "status_code": None,
+                    "error_message": "An unexpected requests error occurred: No connection adapters were found for 'ftp://example.com'"
+                },
+                {
+                    "url": "https://httpbin.org/status/404",
+                    "status_code": 404,
+                    "error_message": "Resource not found (404)."
+                }
+            ]
+        ),
+        (
+            sample_empty_response,
+            0, 0, 0, None, None,
+            []
+        ),
     ]
+)
 
-def test_summarize_results_empty():
-    summary = project.summarize_results(sample_empty_response)
+def test_summarize_results(
+    response_data, 
+    expected_total, 
+    expected_up, 
+    expected_down, 
+    expected_uptime, 
+    expected_avg_time, 
+    expected_failures
+):
+    summary = project.summarize_results(response_data)
     
-    assert summary["total_checks"] == 0
-    assert summary["number_up"] == 0
-    assert summary["number_down"] == 0
-    assert summary["uptime"] is None
-    assert summary["average_response_time"] is None
-    assert not summary["failures"]
+    assert summary["total_checks"] == expected_total
+    assert summary["number_up"] == expected_up
+    assert summary["number_down"] == expected_down
+    assert summary["uptime"] == expected_uptime
+    assert summary["average_response_time"] == expected_avg_time
+    assert summary["failures"] == expected_failures
 
 def test_summarize_results_failed():    
     with pytest.raises(TypeError):
