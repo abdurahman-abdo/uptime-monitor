@@ -25,6 +25,35 @@ In case the input file is missing or has invalid content, the tool terminates an
 - **Internet-independent testing:** the unit tests operate on fabricated responses and temporary files and work offline.  
 
 ## Project structure
+uptime-monitor/
+├── project.py # the program: main and three custom functions
+├── test_project.py # pytest tests for those functions
+├── requirements.txt # third-party libraries
+└── README.md # this file
+
+
+### project.py
+
+- **`main()`** serves as the entry point function. It loads the site list, removes entries without URLs (logging a message for each such entry), processes each remaining site, generates a report, and prints the report. This is the only place where printing messages and quitting the program happens.
+
+- **`check_url(url, timeout, redirects)`** processes a single website and produces a report dictionary which has the same structure with the following keys always: `url`, `final_url`, `status_code`, `response_time_ms`, `is_ok`, `redirects`, and `error`. Any failure it can foresee (connection timeouts, connection errors, invalid URLs, unsupported protocols, error statuses) is captured by a report rather than an exception, so one failed website does not stop other websites from processing.
+
+- **`summarize_results(results)`** processes the list of reports produced by `check_url` and generates a summary report with the following keys: `total_checks`, `number_up`, `number_down`, `uptime`, `average_response_time`, and `failures`. This function performs no network or file I/O, just processes the list.
+
+- **`json_loader(file_name)`** loads the JSON file and returns the list of sites. If the file is missing, is invalid JSON or is of unexpected format, it raises a `ValueError` with an appropriate message. It never prints anything nor quits the program, so it lets `main()` to decide how to display the problem.
+
+### test_project.py
+
+Tests for `check_url`, `summarize_results`, and `json_loader`:
+
+- `check_url` is tested by mocking the request, using `monkeypatch` provided by pytest, replacing the actual request with a fake response. This means that no network connection is required to run the tests because the error cases for the function are checked before any network operation takes place.
+- `summarize_results` is tested on handcrafted report lists, including both successful and failed ones.
+- `json_loader` is tested on small files created in the directory provided by pytest, one for each success and failure case.
+
+### requirements.txt
+
+Provides a list of third-party libraries needed by the project. 
+
 ## How it works
 ## Design decisions
 ## Configuration file format
