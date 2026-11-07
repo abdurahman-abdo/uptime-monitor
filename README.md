@@ -196,7 +196,86 @@ The tests use fake responses and temporary files, so they run quickly without an
 
 ## Example output
 
+Running the program on the included demo file:
 
+```
+python project.py example_sites.json
+```
+
+produces output like this:
+
+```
+There was no url key detected for the specific object, thus dropped!
+...
+================================================
+WEBSITE UPTIME MONITOR
+================================================
+
+9 websites checked with 44.44% success rate!
+------------------------------------------------
+Total sites that were up:   4
+Total sites that were down: 5
+Average response time:      552.06 milliseconds
+Failures: [
+    {
+        "url": "https://httpbin.org/status/404",
+        "status_code": 404,
+        "error_message": "Resource not found (404)."
+    },
+    {
+        "url": "https://httpbin.org/status/500",
+        "status_code": 500,
+        "error_message": "Server Error encountered (500)."
+    },
+    {
+        "url": "https://httpbin.org/delay/5",
+        "status_code": null,
+        "error_message": "The request timed out (more than 2 seconds)."
+    },
+    {
+        "url": "https://this-domain-does-not-exist-12345.com",
+        "status_code": null,
+        "error_message": "Failed to connect to the server."
+    },
+    {
+        "url": "ftp://example.com",
+        "status_code": null,
+        "error_message": "An unexpected requests error occurred: No connection adapters were found for 'ftp://example.com'"
+    }
+]
+```
+
+There are ten URLs in the demo file. The one without any URL was ignored along with a suitable message; nine URLs were processed. Among them, four were working, making the uptime 44.44%, and average response time as 552.06 ms based on these two successfully processed URLs alone. The rest five were marked as failures with their status codes and reasons: 404 and 500 errors, slow response that takes more than two seconds to respond, non-existent domain name, and ftp:// protocol unsupported.
+
+The entry without a URL is skipped with a message and isn't counted. Response times vary from run to run, and the `httpbin.org` entries depend on a public service, so your numbers may differ slightly.
 
 ## Testing
+
+The following command will run the tests inside the project folder:
+
+```
+pytest
+```
+
+Running the tests requires no internet connection and takes just a second. All network requests are substituted with faked ones and file reading is performed with writing small files into the temporary folder and deleting them after pytest has finished.
+
+### What is tested
+
+**`check_url`**
+- A dummy response object serves as a stand-in for a website with the help of pytest's `monkeypatch` and allows the tests to check a working (200), not found (404) and a server error (500) response at once, while it is impossible to create such responses against real sites.
+- Malformed or unsupported urls (without scheme, `ftp://`, `file://`, `mailto:`) are tested using the real library since the error occurs even without making a network request. Those cases are covered by one parametrized test.
+
+**`summarize_results`**
+- Handwritten reports for a mixed result, all websites up, all websites down and an empty list. The expected results were calculated beforehand manually.
+- 404 with large response time is included in the list for a mixed result to make sure that there is no failed check in the average value.
+
+**`json_loader`**
+- A proper json file returns exactly the same list as in the input file.
+- Missing file, empty file, non-json file and a json with incorrect structure (an object or list of strings) should cause `ValueError` which is tested along with checking the exact error message.
+
+### What is not unit-tested
+
+`main()` function uses command line arguments and makes real requests, so the testing is done via running the program with `example_sites.json` as an input argument.
+
+
 ## Limitations and future work
