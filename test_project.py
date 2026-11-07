@@ -303,3 +303,14 @@ def test_json_loader(tmp_path):
     empty_list_filepath = test_dir / "empty.json"
     empty_list_filepath.write_text(json.dumps([], indent=2))
     
+    assert project.json_loader(valid_filepath)
+    with pytest.raises(ValueError, match="The file nothing.json was not found!"):
+        project.json_loader("nothing.json")
+    with pytest.raises(ValueError, match="The JSON file is corrupted or empty!"):
+        project.json_loader(non_json_filepath)
+        project.json_loader(empty_filepath)
+    with pytest.raises(ValueError, match="The json format was invalid!"):
+        project.json_loader(object_filepath)
+        project.json_loader(list_filepath)
+        project.json_loader(empty_list_filepath)
+    
