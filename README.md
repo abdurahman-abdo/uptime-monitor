@@ -113,6 +113,7 @@ The program reads the sites to monitor from a JSON file. The file must contain a
   {"url": "http://github.com", "redirects": false}
 ]
 ```
+> `example_sites.json` is a demo file, not a template: it contains deliberately broken entries to show how failures are reported. You can start from the small example above for your own list.
 
 ### Fields
 
