@@ -15,6 +15,15 @@ After checking all websites from the list, the tool creates a summary report: nu
 In case the input file is missing or has invalid content, the tool terminates and does not make any checks.
 
 ## Features
+- **Multi-site checks:** verifies any number of websites specified in a JSON file.
+- **Site-specific options:** each site can have a different timeout and a flag indicating whether to follow redirects or not, with default values for unspecified properties.
+- **Diagnostics information:** captures the status code, time taken (in milliseconds), URL after the redirections (final URL), number of redirections and the error message for each site.
+- **Fault tolerance:** timeout, non-reachable domain, invalid URL or unsupported schemes (`ftp://`) cause failure and do not crash the application.
+- **Report:** summary statistics including total number of checks, number of working/failed sites, % of uptime, average response time and a list of failures.
+- **Correct average calculation:** the average is calculated from only successful checks, not counting failures.
+- **Input checking:** the absence of a file, incorrect JSON format, incorrect file structure or invalid entries are detected and result in informative messages.
+- **Internet-independent testing:** the unit tests operate on fabricated responses and temporary files and work offline.  
+
 ## Project structure
 ## How it works
 ## Design decisions
