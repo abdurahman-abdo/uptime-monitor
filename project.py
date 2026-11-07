@@ -1,17 +1,55 @@
 import requests, json, sys
 
-def check_url(url: str, timeout: float = 5.0, redirects: bool = True) -> dict:
-    """This function takes a url, [timeout and redirects, optional], checks whether the url responds as intended, and returns a dictionary containing the status info.
-
-    Args:
-        url (str): the url you want to check
-        timeout (float, optional): sets a maximum wait time (in seconds) for the server to send any data back. Defaults to 5.0.
-        redirects (bool, optional): sets whether the request should follow redirects or just stop when it faces one. Defaults to True.
-
-    Returns:
-        dict: with a constant keys of url, the final url, status_code, response_time in microseconds, whether successful or not, amount of redirects, and any errors.
-    """
+def main():
+    if len(sys.argv) !=2:
+        sys.exit("This program requires an argument, i.e, <python_filename> <json_filename>")
     
+    try:
+        urls = json_loader(sys.argv[1])
+    except ValueError as e:
+        sys.exit(e)
+    
+    responses = []
+    
+    cleaned_urls = []
+    for idx, url in enumerate(urls):
+        if url.get("url", None) is None:
+            print("There was no url key detected, thus dropped!")
+            print("...")
+            continue
+        cleaned_urls.append(urls[idx])
+    
+    if not cleaned_urls:
+        sys.exit("A total of 0 websites checked due to empty or invalid input!!! Exiting...")
+
+    
+    for url in cleaned_urls:
+        responses.append(check_url(url=url["url"], timeout=url.get("timeout", 5.0,), redirects=url.get("redirects", True)))
+
+    results = summarize_results(responses)
+    total_checks = results["total_checks"]
+    percentage = results["uptime"]
+    up_no = results["number_up"]
+    down_no = results["number_down"]
+    response_av = results["average_response_time"]
+    failures = results["failures"]
+    failure_urls = [failure["url"] for failure in failures]
+    
+    print("================================================")
+    print("WEBSITE UPTIME MONITOR")
+    print("================================================")
+    print(f"\n{total_checks} websites checked with {percentage:.2f}% success rate!")
+    print("------------------------------------------------")
+    print(f"Total sites that were up:   {up_no}")
+    print(f"Total sites that were down: {down_no}")
+    print(f"Average response time:      {response_av} milliseconds" if response_av is not None else "Average response time:      N/A")
+    # print(f"Failures: {json.dumps(failures, indent=4)}")
+    print(f"Failures: {json.dumps(failure_urls, indent=4)}" if failures else "No failures found.")
+    print()
+    
+    # print(json.dumps(results, indent=4))
+
+def check_url(url: str, timeout: float = 5.0, redirects: bool = True) -> dict:
     report = {
         "url": url,
         "final_url": url,
@@ -63,40 +101,7 @@ def check_url(url: str, timeout: float = 5.0, redirects: bool = True) -> dict:
     
     return report
 
-def days_until_cert_expiry(hostname: str, port: int = 443) -> int | None:
-    """Return days until the TLS cert expires (None for non-HTTPS or failure)."""
-
 def summarize_results(results: list[dict]) -> dict:
-    """Summarize URL checks into their counts, uptime, and failures.
-
-    Args:
-        results (list[dict]): Report dictionaries returned by check_url. The keys
-            used are "is_ok", "response_time_ms" (milliseconds), "url",
-            "status_code", and "error" (error message).
-
-    Returns:
-        A dictionary that always has the same keys:
-            total_checks (int): number of reports received.
-            number_up (int): reports where "is_ok" is true.
-            number_down (int): total_checks minus number_up.
-            uptime (float | int | None): percentage of checks that were
-                up, rounded to 2 decimals. None if there are no checks.
-            average_response_time (float | None): mean response time in
-                milliseconds across successful checks only, rounded to
-                2 decimals. None if there are no successful checks.
-            failures (list[dict]): one entry per failed check, each with
-                "url", "status_code", and "error_message". Empty if
-                every check succeeded.
-
-    Notes:
-        Any check where "is_ok" is false counts as down, including a
-        404 or 500, even though the server responded. Down checks are
-        excluded from the average response time, and a check that never
-        got a response has no time to include anyway.
-
-        Empty list: uptime and average_response_time are both None.
-        All checks failed: uptime is 0 and average_response_time is None.
-    """
     
     total_checks = len(results)
     number_up = 0
@@ -144,55 +149,6 @@ def json_loader(file_name):
         raise ValueError("The json format was invalid!")
     
     return urls
-def main():
-    """Load targets, run checks, print/store a summary (CLI entry point)."""
-    if len(sys.argv) !=2:
-        sys.exit("This program requires an argument, i.e, <python_filename> <json_filename>")
-    
-    try:
-        urls = json_loader(sys.argv[1])
-    except ValueError as e:
-        sys.exit(e)
-    
-    responses = []
-    
-    cleaned_urls = []
-    for idx, url in enumerate(urls):
-        if url.get("url", None) is None:
-            print("There was no url key detected, thus dropped!")
-            print("...")
-            continue
-        cleaned_urls.append(urls[idx])
-    
-    if not cleaned_urls:
-        sys.exit("A total of 0 websites checked due to empty or invalid input!!! Exiting...")
-
-    
-    for url in cleaned_urls:
-        responses.append(check_url(url=url["url"], timeout=url.get("timeout", 5.0,), redirects=url.get("redirects", True)))
-
-    results = summarize_results(responses)
-    total_checks = results["total_checks"]
-    percentage = results["uptime"]
-    up_no = results["number_up"]
-    down_no = results["number_down"]
-    response_av = results["average_response_time"]
-    failures = results["failures"]
-    failure_urls = [failure["url"] for failure in failures]
-    
-    print("================================================")
-    print("WEBSITE UPTIME MONITOR")
-    print("================================================")
-    print(f"\n{total_checks} websites checked with {percentage:.2f}% success rate!")
-    print("------------------------------------------------")
-    print(f"Total sites that were up:   {up_no}")
-    print(f"Total sites that were down: {down_no}")
-    print(f"Average response time:      {response_av} milliseconds" if response_av is not None else "Average response time:      N/A")
-    # print(f"Failures: {json.dumps(failures, indent=4)}")
-    print(f"Failures: {json.dumps(failure_urls, indent=4)}" if failures else "No failures found.")
-    print()
-    
-    # print(json.dumps(results, indent=4))
 
 if __name__ == "__main__":
     main()
