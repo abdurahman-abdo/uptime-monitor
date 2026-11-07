@@ -25,12 +25,11 @@ In case the input file is missing or has invalid content, the tool terminates an
 - **Internet-independent testing:** the unit tests operate on fabricated responses and temporary files and work offline.  
 
 ## Project structure
-uptime-monitor/
-├── project.py # the program: main and three custom functions
-├── test_project.py # pytest tests for those functions
-├── requirements.txt # third-party libraries
-└── README.md # this file
-
+uptime-monitor/  
+├── project.py # the program: main and three custom functions  
+├── test_project.py # pytest tests for those functions  
+├── requirements.txt # third-party libraries  
+└── README.md # this file  
 
 ### project.py
 
