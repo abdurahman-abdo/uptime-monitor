@@ -14,7 +14,7 @@ def main():
     cleaned_urls = []
     for idx, url in enumerate(urls):
         if url.get("url", None) is None:
-            print("There was no url key detected, thus dropped!")
+            print("There was no url key detected for the specific object, thus dropped!")
             print("...")
             continue
         cleaned_urls.append(urls[idx])
