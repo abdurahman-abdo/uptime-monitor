@@ -27,13 +27,14 @@ In case the input file is missing or has invalid content, the tool terminates an
 ## Project structure
 uptime-monitor/  
 ├── project.py # the program: main and three custom functions  
-├── test_project.py # pytest tests for those functions  
+├── test_project.py # pytest tests for those functions 
+├── example_sites.json # example list of sites to monitor 
 ├── requirements.txt # third-party libraries  
 └── README.md # this file  
 
 ### project.py
 
-- **`main()`** serves as the entry point function. It loads the site list, removes entries without URLs (logging a message for each such entry), processes each remaining site, generates a report, and prints the report. This is the only place where printing messages and quitting the program happens.
+- **`main()`** is where the execution starts. It takes the JSON file’s file path as an argument and loads the list of sites. It discards entries without URLs (by printing a warning message), performs a test for every site in the list, and prints the summary. This is the only function that outputs anything on the console screen and also where the exit() function is called. If no file path is specified as an argument, `main()` prints usage and then exits the application.
 
 - **`check_url(url, timeout, redirects)`** processes a single website and produces a report dictionary which has the same structure with the following keys always: `url`, `final_url`, `status_code`, `response_time_ms`, `is_ok`, `redirects`, and `error`. Any failure it can foresee (connection timeouts, connection errors, invalid URLs, unsupported protocols, error statuses) is captured by a report rather than an exception, so one failed website does not stop other websites from processing.
 
