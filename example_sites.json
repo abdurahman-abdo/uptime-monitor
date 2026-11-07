@@ -1,0 +1,12 @@
+[
+    {"url": "https://example.com"},
+    {"url": "https://www.github.com", "timeout": 10},
+    {"url": "https://httpbin.org/status/404"},
+    {"url": "https://httpbin.org/status/500"},
+    {"url": "https://httpbin.org/delay/5", "timeout": 2},
+    {"url": "https://httpbin.org/redirect/2", "redirects": true},
+    {"url": "http://github.com", "redirects": false},
+    {"url": "https://this-domain-does-not-exist-12345.com"},
+    {"url": "ftp://example.com"},
+    {"timeout": 5}
+]
