@@ -97,6 +97,39 @@ Provides a list of third-party libraries needed by the project.
 **The tests pass without any network connection.** All functions requiring network connection return a predefined value instead so tests can easily be done even offline simulating such situations as 500 status or timeout. Cases of errors before any communication are done by the library itself.  
 
 ## Configuration file format
+
+The program reads the sites to monitor from a JSON file. The file must contain a **list**, and each item in the list is an object describing one site.
+
+```json
+[
+  {"url": "https://example.com"},
+  {"url": "https://www.github.com", "timeout": 10},
+  {"url": "http://github.com", "redirects": false}
+]
+```
+
+### Fields
+
+| Field | Required | Default | Meaning |
+|---|---|---|---|
+| `url` | yes | none | The full address to check, including `http://` or `https://`. |
+| `timeout` | no | 5.0 | Seconds to wait for a response before the check counts as failed. |
+| `redirects` | no | true | Whether to follow redirects. If false, the first response is the result, even if it is a redirect. |
+
+Any other fields are ignored.
+
+### What happens with bad input
+
+| Situation | Result |
+|---|---|
+| The file does not exist | The program stops with an error message that names the file. |
+| The file is empty or is not valid JSON | The program stops with an error message. |
+| The top level is not a list, or an item is not an object | The program stops with an error message. |
+| An entry has no `url` | That entry is skipped, a message is printed for it, and the other sites are still checked. |
+| Every entry is skipped, or the list is empty | The program stops and reports that there is nothing to check. |
+
+A site that cannot be reached, or an unsupported address such as `ftp://example.com`, is not a configuration error. It is checked like any other site and reported as a failure.
+
 ## Installation and usage
 ## Example output
 ## Testing
