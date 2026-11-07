@@ -176,13 +176,13 @@ A site that cannot be reached, or an unsupported address such as `ftp://example.
 
 ### Run
 
-Create a JSON file listing the sites you want to monitor (see [Configuration file format](#configuration-file-format)), then pass its path to the program:
+Provide the path to a JSON file with the monitored sites (see [Configuration file format](#configuration-file-format)):
 
 ```
-python project.py [path to your JSON file]
+python project.py example_sites.json
 ```
 
-The program checks every site in the file and prints a report. If no file is given, the file is missing or invalid, or nothing usable is in it, the program stops with a message that explains what was wrong.
+All monitored sites will be checked, and their status will be printed. If there is no such file, the file is empty, invalid, or contains something else except the needed information, an error message will be printed.
 
 ### Test
 
