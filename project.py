@@ -33,7 +33,6 @@ def main():
     down_no = results["number_down"]
     response_av = results["average_response_time"]
     failures = results["failures"]
-    failure_urls = [failure["url"] for failure in failures]
     
     print("================================================")
     print("WEBSITE UPTIME MONITOR")
@@ -43,7 +42,7 @@ def main():
     print(f"Total sites that were up:   {up_no}")
     print(f"Total sites that were down: {down_no}")
     print(f"Average response time:      {response_av} milliseconds" if response_av is not None else "Average response time:      N/A")
-    print(f"Failures: {json.dumps(failure_urls, indent=4)}" if failures else "No failures found.")
+    print(f"Failures: {json.dumps(failures, indent=4)}" if failures else "No failures found.")
     print()
 
 def check_url(url: str, timeout: float = 5.0, redirects: bool = True) -> dict:
