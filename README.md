@@ -18,7 +18,7 @@ In case the input file is missing or has invalid content, the tool terminates an
 - **Multi-site checks:** verifies any number of websites specified in a JSON file.
 - **Site-specific options:** each site can have a different timeout and a flag indicating whether to follow redirects or not, with default values for unspecified properties.
 - **Diagnostics information:** captures the status code, time taken (in milliseconds), URL after the redirects (final URL), number of redirects and the error message for each site.
-- **Fault tolerance:** timeout, non-reachable domain, invalid URL or unsupported schemes (`ftp://`) cause failure and do not crash the application.
+- **Fault tolerance:** timeouts, unreachable domains, malformed URLs, unsupported schemes (`ftp://`) and error responses are recorded as failed checks and don't stop the run.
 - **Report:** summary statistics including total number of checks, number of working/failed sites, % of uptime, average response time and a list of failures.
 - **Correct average calculation:** the average is calculated from only successful checks, not counting failures.
 - **Input checking:** the absence of a file, incorrect JSON format, incorrect file structure or invalid entries are detected and result in informative messages.
@@ -34,7 +34,7 @@ uptime-monitor/
 
 ### project.py
 
-- **`main()`** is where the execution starts. It takes the JSON file’s file path as an argument and loads the list of sites. It discards entries without URLs (by printing a warning message), performs a test for every site in the list, and prints the summary. This is the only function that outputs anything on the console screen and also where the exit() function is called. If no file path is specified as an argument, `main()` prints usage and then exits the application.
+- **`main()`** is where the execution starts. It takes the JSON file’s file path as an argument and loads the list of sites. It discards entries without URLs (by printing a warning message), performs a test for every site in the list, and prints the summary. This is the only function that outputs anything on the console screen and also where the exit() function is called. If no file path is specified as an argument, `main()` prints usage and then exits the application. If the number of arguments is wrong (none, or more than one), main() prints a usage message and exits.
 
 - **`check_url(url, timeout, redirects)`** processes a single website and produces a report dictionary which has the same structure with the following keys always: `url`, `final_url`, `status_code`, `response_time_ms`, `is_ok`, `redirects`, and `error`. Any failure it can foresee (connection timeouts, connection errors, invalid URLs, unsupported protocols, error statuses) is captured by a report rather than an exception, so one failed website does not stop other websites from processing.
 
@@ -46,7 +46,7 @@ uptime-monitor/
 
 Tests for `check_url`, `summarize_results`, and `json_loader`:
 
-- `check_url` is tested by mocking the request, using `monkeypatch` provided by pytest, replacing the actual request with a fake response. This means that no network connection is required to run the tests because the error cases for the function are checked before any network operation takes place.
+- `check_url` is tested by replacing `requests.get` with a fake response (pytest's `monkeypatch`), so working, not-found and server-error cases can be simulated without any network connection. Malformed and unsupported URLs are tested with the real library, because `requests` rejects them before sending anything.
 - `summarize_results` is tested on handcrafted report lists, including both successful and failed ones.
 - `json_loader` is tested on small files created in the directory provided by pytest, one for each success and failure case.
 
@@ -59,7 +59,7 @@ Provides a list of third-party libraries needed by the project.
 A demo input file for trying out the program. It covers a range of outcomes: healthy sites, error pages (404 and 500), a slow response that exceeds its timeout, a redirect chain, a domain that does not exist, an unsupported address (`ftp://`), and one entry with no URL, which the program skips. Results for the `httpbin.org` entries can vary, since it is a public service.
 
 ## How it works
-1. **Loading the site list.** The `main` function invokes `json_loader`, which loads the JSON file. In case of a file absence or invalidity, or if its format is wrong, the loader returns an error and stops `main` with the respective error message before any other work starts.
+1. **Loading the site list.** `main` takes the file path from the command line and passes it to `json_loader`. If the file is missing, is not valid JSON, or has the wrong structure, the loader raises a `ValueError`, and main prints its message and exits before any checks run.
 
 2. **Cleaning the entries.** All entries without `url` field are removed, and a warning is outputted for each skipped entry. In case there are no useful entries left after that, the program stops instead of reporting about zero sites.
 
@@ -74,19 +74,19 @@ A demo input file for trying out the program. It covers a range of outcomes: hea
 
 4. **Summarize the data.** `main()` sends the list of reports to `summarize_results()`. The function tallies the number of sites which were up and down and gets the uptime percentage. It also determines the average response time among those that have succeeded and creates a list of the failed ones with their URL, status code, and error message. The values which could not be determined will be `None`.
 
-5. **Display the results.** `main()` reads the json from the CLI argument, then displays the result in a neat format on the terminal. It displays the number of sites tested, the percentage uptime, the number of sites up and down, the average response time (or `N/A`), and the failed attempts.
+5. **Display the results.** `main()` prints the report: the number of sites checked, the uptime percentage, the number up and down, the average response time (or N/A), and the failures with their status codes and reasons, or a message that there were none
 
 
 ## Design decisions
 **No response time for failed checks.** In case of total failure (timeout, unreachable domain, wrong URL), the response time will be `None`, not `0`. Otherwise the average will be distorted by an invented value. `None` explicitly denotes the absence of measurement.
 
-**Successful checks only contribute to average response time.** There is no point to affect the average in case of downtime. The uptime ratio takes into account all checks, which makes it impossible to hide failures. If there were no successful checks, the average is `None`.
+**Only successful checks count toward the average response time.** A site that is down shouldn't make the average look faster or slower, but the uptime percentage still counts every check, so failures are never hidden. If no check succeeded, the average is `None`.
 
 **4xx or 5xx response codes are considered downtime.** Server responded, but a user cannot access the page due to an error, therefore it has to be treated as a failure. The statistics list them along with the code. Their response times are not included in average, which is consistent with the above principle.
 
-`check_url` never fails, and always returns the same fields. Each possible error is accounted for as a field in the report, so one bad site doesn't block checking the other sites, and code handling the reports doesn't need to guard against missing fields.
+**`check_url` reports network and HTTP failures instead of raising them, and always returns the same fields.** One bad site therefore can't stop the others from being checked, and code that handles the reports never has to guard against missing keys.
 
-**Each site's redirects are configurable independently.** [Provide your actual defaults and reasoning here. Say whether an off redirect for a server returning 3xx is considered up or not.]
+**Redirects are followed by default and can be turned off per site.** A browser follows redirects, so by default the check judges the page a visitor would actually reach, and the report records the final URL and the number of hops. With `"redirects": false`, the first response is the result. A redirect (3xx) is not an error status, so in that mode a site that answers with one counts as up.
 
 **The calculations are separated from input and output.** `summarize_results` contains just arithmetic on the list, `check_url` communicates with websites only, and `json_loader` reads a file. That makes them independent of each other and testable separately. In the future, a web service can use them independently of command line functionality.
 
@@ -133,7 +133,8 @@ Any other fields are ignored.
 | The file is empty or is not valid JSON | The program stops with an error message. |
 | The top level is not a list, or an item is not an object | The program stops with an error message. |
 | An entry has no `url` | That entry is skipped, a message is printed for it, and the other sites are still checked. |
-| Every entry is skipped, or the list is empty | The program stops and reports that there is nothing to check. |
+| The list is empty (`[]`) | The program stops with an error that the format is invalid. |
+| Every entry is skipped | The program stops and reports that there is nothing to check. |
 
 A site that cannot be reached, or an unsupported address such as `ftp://example.com`, is not a configuration error. It is checked like any other site and reported as a failure.
 
@@ -141,7 +142,7 @@ A site that cannot be reached, or an unsupported address such as `ftp://example.
 
 ### Requirements
 
-- Python3 or newer
+- Python (v. 3.10 or newer)
 - An internet connection to run the monitor (the tests do not need one)
 
 ### Install
@@ -183,7 +184,7 @@ Provide the path to a JSON file with the monitored sites (see [Configuration fil
 python project.py example_sites.json
 ```
 
-All monitored sites will be checked, and their status will be printed. If there is no such file, the file is empty, invalid, or contains something else except the needed information, an error message will be printed.
+All monitored sites will be checked, and their status will be printed. If the path is missing, the file doesn’t exist, isn’t valid JSON, or doesn’t contain a list of site objects, the program prints an error message and stops.
 
 ### Test
 
@@ -245,9 +246,7 @@ Failures: [
 ]
 ```
 
-There are ten URLs in the demo file. The one without any URL was ignored along with a suitable message; nine URLs were processed. Among them, four were working, making the uptime 44.44%, and average response time as 552.06 ms based on these two successfully processed URLs alone. The rest five were marked as failures with their status codes and reasons: 404 and 500 errors, slow response that takes more than two seconds to respond, non-existent domain name, and ftp:// protocol unsupported.
-
-The entry without a URL is skipped with a message and isn't counted. Response times vary from run to run, and the `httpbin.org` entries depend on a public service, so your numbers may differ slightly.
+The demo file has ten entries. One has no URL, so it is skipped with a message and not counted, which leaves nine checks. Four were up, giving an uptime of 44.44%, and the average response time of 552.06 ms comes from those four successful checks only. The other five are listed as failures with their status codes and reasons: the 404 and 500 error pages, the endpoint that exceeds its two-second timeout, the domain that does not exist, and the unsupported `ftp://` address. Response times vary from run to run, and the `httpbin.org` entries depend on a public service, so your numbers may differ slightly.
 
 ## Testing
 
@@ -268,14 +267,15 @@ Running the tests requires no internet connection and takes just a second. All n
 **`summarize_results`**
 - Handwritten reports for a mixed result, all websites up, all websites down and an empty list. The expected results were calculated beforehand manually.
 - 404 with large response time is included in the list for a mixed result to make sure that there is no failed check in the average value.
+- A successful report without a response time raises a `TypeError`.
 
 **`json_loader`**
-- A proper json file returns exactly the same list as in the input file.
-- Missing file, empty file, non-json file and a json with incorrect structure (an object or list of strings) should cause `ValueError` which is tested along with checking the exact error message.
+- A valid file returns exactly the list that was written.
+- A missing file, an empty file, text that isn't JSON, an empty list, and valid JSON with the wrong structure (an object, or a list of strings) each raise a `ValueError`, and the tests check the message.
 
 ### What is not unit-tested
-
-`main()` function uses command line arguments and makes real requests, so the testing is done via running the program with `example_sites.json` as an input argument.
+- **`main()`** reads the command line, makes real requests, prints the report, and exits, so it is verified by running the program on `example_sites.json`.
+- **Timeouts, connection errors, and redirect handling in `check_url`** are not covered by unit tests yet. The demo file exercises them against real endpoints instead: a slow response that exceeds its timeout, a domain that does not exist, a redirect chain, and a site with redirects turned off.
 
 
 ## Limitations and future work
