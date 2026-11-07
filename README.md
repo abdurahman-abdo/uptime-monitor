@@ -87,7 +87,7 @@ Provides a list of third-party libraries needed by the project.
 
 **Loader throws exceptions, while `main()` handles them.** `json_loader` throws a `ValueError` with a proper explanation when the file is missing or incorrect. It never prints or exits, which means it may be used in a web service later on. There, an erroneous configuration file should not terminate the entire server process. Only `main()` prints and exits.
 
-**Dropped entries due to lack of URL raise warning.** One invalid line shouldn't affect the checks for the rest of the sites. However, the drawback is that the site may be dropped because of a trivial reason – a typo, therefore a warning is printed for each skipped entry. On failure of checking of all entries program exits without reporting about zero results.
+**Dropped entries due to lack of URL raise warning.** One invalid line shouldn't affect the checks for the rest of the sites. However, the drawback is that the site may be dropped because of a trivial reason like a typo, therefore a warning is printed for each skipped entry. On failure of checking of all entries program exits without reporting about zero results.
 
 **Any corrupted data leads to a crash.** In case when a successfully checked website doesn't provide any response time, `summarize_results` crashes and doesn't substitute anything implicitly. The problem here is obviously somewhere up the code and such default behavior would hide the problem behind the legitimate average.
 
