@@ -54,6 +54,10 @@ Tests for `check_url`, `summarize_results`, and `json_loader`:
 
 Provides a list of third-party libraries needed by the project. 
 
+### example_sites.json
+
+A demo input file for trying out the program. It covers a range of outcomes: healthy sites, error pages (404 and 500), a slow response that exceeds its timeout, a redirect chain, a domain that does not exist, an unsupported address (`ftp://`), and one entry with no URL, which the program skips. Results for the `httpbin.org` entries can vary, since it is a public service.
+
 ## How it works
 1. **Loading the site list.** The `main` function invokes `json_loader`, which loads the JSON file. In case of a file absence or invalidity, or if its format is wrong, the loader returns an error and stops `main` with the respective error message before any other work starts.
 
