@@ -95,6 +95,8 @@ Provides a list of third-party libraries needed by the project.
 
 **The tests pass without any network connection.** All functions requiring network connection return a predefined value instead so tests can easily be done even offline simulating such situations as 500 status or timeout. Cases of errors before any communication are done by the library itself.  
 
+**The source file gets selected via the command line arguments.** The name is an argument rather than a hard-coded one, meaning that a single program can track any set of web addresses, for example, a different file for every customer.
+
 ## Configuration file format
 
 The program reads the sites to monitor from a JSON file. The file must contain a **list**, and each item in the list is an object describing one site.
