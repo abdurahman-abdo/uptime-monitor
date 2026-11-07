@@ -55,6 +55,24 @@ Tests for `check_url`, `summarize_results`, and `json_loader`:
 Provides a list of third-party libraries needed by the project. 
 
 ## How it works
+1. **Loading the site list.** The `main` function invokes `json_loader`, which loads the JSON file. In case of a file absence or invalidity, or if its format is wrong, the loader returns an error and stops `main` with the respective error message before any other work starts.
+
+2. **Cleaning the entries.** All entries without `url` field are removed, and a warning is outputted for each skipped entry. In case there are no useful entries left after that, the program stops instead of reporting about zero sites.
+
+3. **Checking each site.** For all other entries, `main` invokes `check_url` function with the site's URL and own values for timeout and redirects options (the default ones are used if options are not provided). `check_url` sends the request and logs:
+   - status code,
+   - response time in milliseconds,
+   - final URL and count of redirects done,
+   - check result (`is_ok`),
+   - error message, in case of an error
+
+   A status code 4xx or 5xx is considered as an error. Timeout, connection errors, incorrect URLs, and invalid schemes are caught and converted to readable error messages and proceed to the next site.
+
+4. **Summarize the data.** `main()` sends the list of reports to `summarize_results()`. The function tallies the number of sites which were up and down and gets the uptime percentage. It also determines the average response time among those that have succeeded and creates a list of the failed ones with their URL, status code, and error message. The values which could not be determined will be `None`.
+
+5. **Display the results.** `main()` displays the result in a neat format on the terminal – the number of sites tested, the percentage uptime, the number of sites up and down, the average response time (or `N/A`), and the failed attempts.
+
+
 ## Design decisions
 ## Configuration file format
 ## Installation and usage
