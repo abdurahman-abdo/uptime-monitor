@@ -2,6 +2,7 @@ import pytest
 from datetime import timedelta
 import requests
 import project
+import json
 
 @pytest.mark.parametrize("url", [
     "ftp://example.com",
@@ -266,4 +267,39 @@ def test_summarize_results_empty():
 def test_summarize_results_failed():    
     with pytest.raises(TypeError):
             project.summarize_results(sample_corrupt_response_dict)
-        
+
+def test_json_loader(tmp_path):
+    valid_data = [
+        {"url": "https://example.com"},
+        {"url": "https://www.github.com", "timeout": 10},
+        {"url": "https://httpbin.org/status/404"},
+        {"url": "https://httpbin.org/status/500"},
+        {"url": "https://httpbin.org/delay/5", "timeout": 2},
+        {"url": "https://httpbin.org/redirect/2", "redirects": True},
+        {"url": "http://github.com", "redirects": False},
+        {"url": "https://this-domain-does-not-exist-12345.com"},
+        {"url": "ftp://example.com"},
+        {"timeout": 5}
+    ]
+
+    test_dir = tmp_path / "debug"
+    test_dir.mkdir(exist_ok=True)
+
+    valid_filepath = test_dir / "valid.json"
+    valid_filepath.write_text(json.dumps(valid_data, indent=2))
+    
+    non_json_filepath = test_dir / "invalid.txt"
+    non_json_filepath.write_text("This is a test string.")
+    
+    empty_filepath = test_dir / "invalid.json"
+    empty_filepath.write_text("")
+    
+    object_filepath = test_dir / "object_file.json"
+    object_filepath.write_text(json.dumps({"url": "https://example.com"}, indent=2))
+    
+    list_filepath = test_dir / "list_file.json"
+    list_filepath.write_text(json.dumps(["https://example.com", "https://github.com"], indent=2))
+    
+    empty_list_filepath = test_dir / "empty.json"
+    empty_list_filepath.write_text(json.dumps([], indent=2))
+    
