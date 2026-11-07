@@ -69,7 +69,7 @@ Provides a list of third-party libraries needed by the project.
 
 4. **Summarize the data.** `main()` sends the list of reports to `summarize_results()`. The function tallies the number of sites which were up and down and gets the uptime percentage. It also determines the average response time among those that have succeeded and creates a list of the failed ones with their URL, status code, and error message. The values which could not be determined will be `None`.
 
-5. **Display the results.** `main()` displays the result in a neat format on the terminal – the number of sites tested, the percentage uptime, the number of sites up and down, the average response time (or `N/A`), and the failed attempts.
+5. **Display the results.** `main()` reads the json from the CLI argument, then displays the result in a neat format on the terminal. It displays the number of sites tested, the percentage uptime, the number of sites up and down, the average response time (or `N/A`), and the failed attempts.
 
 
 ## Design decisions
