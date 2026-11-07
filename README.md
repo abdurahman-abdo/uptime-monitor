@@ -130,6 +130,62 @@ Any other fields are ignored.
 A site that cannot be reached, or an unsupported address such as `ftp://example.com`, is not a configuration error. It is checked like any other site and reported as a failure.
 
 ## Installation and usage
+
+### Requirements
+
+- Python3 or newer
+- An internet connection to run the monitor (the tests do not need one)
+
+### Install
+
+1. Get the project:
+
+   ```
+   git clone https://github.com/abdurahman-abdo/uptime-monitor.git
+   cd uptime-monitor
+   ```
+
+2. Create and activate a virtual environment:
+
+   ```
+   python -m venv venv
+   ```
+
+   Windows (PowerShell):
+   ```
+   venv\Scripts\Activate.ps1
+   ```
+
+   macOS / Linux:
+   ```
+   source venv/bin/activate
+   ```
+
+3. Install the dependencies:
+
+   ```
+   pip install -r requirements.txt
+   ```
+
+### Run
+
+Create a JSON file listing the sites you want to monitor (see [Configuration file format](#configuration-file-format)), then pass its path to the program:
+
+```
+python project.py [path to your JSON file]
+```
+
+The program checks every site in the file and prints a report. If no file is given, the file is missing or invalid, or nothing usable is in it, the program stops with a message that explains what was wrong.
+
+### Test
+
+```
+pytest
+```
+
+The tests use fake responses and temporary files, so they run quickly without an internet connection.
+
+
 ## Example output
 ## Testing
 ## Limitations and future work
