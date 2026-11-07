@@ -43,11 +43,8 @@ def main():
     print(f"Total sites that were up:   {up_no}")
     print(f"Total sites that were down: {down_no}")
     print(f"Average response time:      {response_av} milliseconds" if response_av is not None else "Average response time:      N/A")
-    # print(f"Failures: {json.dumps(failures, indent=4)}")
     print(f"Failures: {json.dumps(failure_urls, indent=4)}" if failures else "No failures found.")
     print()
-    
-    # print(json.dumps(results, indent=4))
 
 def check_url(url: str, timeout: float = 5.0, redirects: bool = True) -> dict:
     report = {
