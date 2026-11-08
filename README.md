@@ -279,3 +279,26 @@ Running the tests requires no internet connection and takes just a second. All n
 
 
 ## Limitations and future work
+
+### Limitations
+
+- **Only one check per run.** Sites get checked only once, with no data being saved. The uptime percentage reflects the number of successful sites checked in this run, not the uptime in general.
+- **One by one sites checking.** The duration of the run depends on the sum of all response times and timeouts, which means the larger the input file and slower sites - the longer it takes.
+- **Only time before response is counted.** Response time measures the period of waiting for the response, not the full page loading and rendering.
+- **A redirect with redirects turned off counts as up.** With `"redirects": false`, a site that answers with a redirect (3xx) is reported as up, because a redirect is not an error status. The check only shows that the server responded, not that the final page works.
+- **Invalid `timeout` values stop the program.** A `timeout` that is not a positive number (for example `"5"`, `0`, or `-1`) makes the `requests` library raise a `ValueError`, which `check_url` does not catch, so the run ends with an error and no report. Other fields are not type-checked either: for instance, the string `"false"` for `redirects` is likely treated as true.
+- **Missing entries are not marked.** The program indicates that an entry without a `url` has been skipped, but it doesn’t show which one, and an entry with an empty `url` isn't even skipped; it is processed, and then indicated as failed.
+- **Exit code doesn’t indicate sites' availability.** The program fails with an error code only if the input data is incorrect. If sites are unavailable, the program terminates successfully, and therefore scripts cannot handle such situations.
+- **Not all errors are caused by the sites.** Some sites don’t allow requests from bots, which makes them appear unavailable, while limited network access may result in timeouts, as evidenced by the GitHub entries in the example.
+- **Text output only.** The output is a text report with failed sites presented in JSON format.
+- **There are no automated tests for `main()`.** This function is tested manually by using `example_sites.json` file.
+
+### Future works
+
+- **Expiry date of certificates.** Return how many days are left until expiry for the TLS certificate for each of the sites.
+- **An exit code that means something.** This would be useful for a scheduler/CI job to know that a site is down.
+- **Checks running in parallel.** So a job would take the time of the longest running check and not the sum.
+- **History.** Saving the data into a DB for calculating uptime statistics.
+- **Web service with a status page.** Using check_url, summarize_results and json_loader, having /health and /status endpoints.
+- **Alerts to slack/webhook.** Alerts in case a site goes down or a certificate is about to expire.
+- **DevOps tooling.** Docker, Github actions and deployment to some hosting service.
