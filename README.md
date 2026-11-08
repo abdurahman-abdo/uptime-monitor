@@ -1,5 +1,5 @@
 # Uptime Monitor
-#### Video Demo: [YouTube URL]
+#### Video Demo: https://youtu.be/mKftTtzedwk
 #### Description:
 Uptime Monitor is a tool that checks a list of websites you provide to it in a JSON file and gives you a report on their status, average response time, and reasons for failure.  
 It performs the check individually for each website using the timeout and redirect configuration set by the user or uses default values if not provided, then it generates an overall uptime rate, an average response time, and a list of failures.  
